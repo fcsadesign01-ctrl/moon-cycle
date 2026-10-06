@@ -12,17 +12,17 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;
 padding:calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 40px);max-width:480px;margin-inline:auto}
-#moon{display:block;width:170px;height:170px;margin:12px auto 18px}
+#moon{display:block;width:220px;height:220px;margin:8px auto 14px}
 .big{text-align:center;font-size:72px;font-weight:300;line-height:1}
 .phase{text-align:center;text-transform:uppercase;letter-spacing:3px;font-size:14px;margin:10px 0 18px}
 .info{text-align:center;text-transform:uppercase;letter-spacing:1.5px;font-size:13px;line-height:2;color:var(--mute)}
 hr{border:0;border-top:1px solid var(--ink);margin:30px 0 26px}
 .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 h2{font-weight:normal;font-size:26px;text-transform:uppercase;margin:0}
-button{background:none;border:1px solid var(--line);color:var(--ink);font:20px Georgia,serif;width:40px;height:40px;margin-left:6px}
+.nav{background:none;border:1px solid var(--line);color:var(--ink);font:20px Georgia,serif;width:40px;height:40px;margin-left:6px}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .dow{font-size:10px;color:var(--mute);text-align:center;letter-spacing:1px;padding-bottom:2px}
-.c{aspect-ratio:1;border:1px solid var(--line);padding:3px 4px;font-size:11px;text-align:right;position:relative;background:none;color:var(--ink);font-family:inherit;margin:0;width:auto;height:auto}
+.c{aspect-ratio:1;border:1px solid var(--line);padding:3px 4px;font-size:11px;text-align:right;position:relative;background:none;color:var(--ink);font-family:inherit;margin:0}
 .c.e{border-color:#1b2230}
 .c b{font-weight:normal}
 .c span{position:absolute;left:0;right:0;bottom:4px;text-align:center;font-size:14px;line-height:1.1}
@@ -30,81 +30,68 @@ button{background:none;border:1px solid var(--line);color:var(--ink);font:20px G
 .c.t{border-color:var(--ink)}
 .c.s{background:#18202e}
 h3{font-weight:normal;font-size:16px;letter-spacing:2px;margin:34px 0 10px}
+.fm{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line);font-size:15px}
+.fm small{color:var(--mute);font-size:12px}
+.fm.past{opacity:.4}.fm.next{color:#f1d98a}
 .notes p{font-size:15px;line-height:1.65;color:#d6d3ca;margin:0 0 12px}
 .fine{font-size:11px;color:var(--mute);line-height:1.5;margin-top:26px}
 </style>
 </head>
 <body>
-<svg id="moon" viewBox="-90 -90 180 180"></svg>
+<canvas id="moon" width="440" height="440"></canvas>
 <div class="big" id="pct">–</div>
 <div class="phase" id="phase"></div>
 <div class="info" id="info"></div>
 <hr>
-<div class="head"><h2 id="mon"></h2><div><button id="prev">‹</button><button id="next">›</button></div></div>
+<div class="head"><h2 id="mon"></h2><div><button class="nav" id="prev">‹</button><button class="nav" id="next">›</button></div></div>
 <div class="grid" id="grid"></div>
-<div class="notes">
+<h3 id="fmh"></h3>
+<div id="fml"></div>
 <h3>NOTES:</h3>
-<div id="notes"></div>
-</div>
-<p class="fine">Illumination is calculated astronomically for your device's time zone and checked against published new/full moon times (Old Farmer's Almanac, TheSkyLive). Guidance follows traditional lunar-phase astrology: a cultural tradition, not science.</p>
+<div class="notes" id="notes"></div>
+<p class="fine">Illumination and times are calculated astronomically (accurate to within a few minutes) in your device's time zone and checked against published new/full moon times (Old Farmer's Almanac, TheSkyLive). Full moon names follow the Almanac's traditional monthly names. Guidance follows traditional lunar-phase astrology, a cultural tradition rather than science. Moon map: NASA-derived texture from the three.js sample files.</p>
+<script src="moon-core.js"></script>
 <script>
-const R=Math.PI/180,n=x=>((x%360)+360)%360,sn=x=>Math.sin(x*R);
-function moon(t){
-  const d=t/864e5+2440587.5-2451545;
-  const g=n(357.529+0.98560028*d);
-  const ls=n(280.459+0.98564736*d+1.915*sn(g)+0.02*sn(2*g));
-  const L=218.316+13.176396*d,M=134.963+13.064993*d,F=93.272+13.22935*d,D=297.85+12.190749*d;
-  const lm=n(L+6.289*sn(M)+1.274*sn(2*D-M)+0.658*sn(2*D)+0.214*sn(2*M)-0.186*sn(g)-0.114*sn(2*F));
-  const e=n(lm-ls);
-  return{e,k:(1-Math.cos(e*R))/2*100,lon:lm,wax:e<180};
-}
-function nextEvent(from,target){
-  let p=n(moon(from).e-target);
-  for(let t=from+36e5;t<from+32*864e5;t+=36e5){
-    const c=n(moon(t).e-target);
-    if(p>340&&c<20)return t;
-    p=c;
-  }
-}
-const PH=["New Moon","Waxing Crescent","First Quarter","Waxing Gibbous","Full Moon","Waning Gibbous","Last Quarter","Waning Crescent"];
-const phaseOf=e=>Math.round(e/45)%8;
-const SIGN=["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
-const SIGNTXT=["bold starts and initiative","comfort, steadiness and the senses","curiosity, talking and learning","home, feelings and nurturing","creativity and self-expression","order, health and practical detail","balance, partnership and harmony","depth, honesty and transformation","freedom, travel and big-picture thinking","discipline, structure and long goals","community, ideas and originality","intuition, rest and imagination"];
-const NOTES=[
-"A blank page. Traditionally the time to set intentions and plant seeds. Keep things quiet and write down what you want to grow this cycle.",
-"Energy begins to build. Take the first small steps on your intentions, gather what you need, and make plans. Be patient with early progress.",
-"A moment of tension and decision. Obstacles often show up now, so commit, take action, and adjust your approach where needed.",
-"Refine and fine-tune. Edit, improve and keep going. Trust the process, because the payoff is close.",
-"Peak light and peak emotion. Traditionally for manifesting, celebrating, giving thanks and noticing what has come to fruition. Feelings can run high, so prioritise rest.",
-"Share and give thanks. Pass on what you have learned, reflect on the cycle and express gratitude.",
-"Time to release. Let go of habits, clutter or grudges that no longer serve you, forgive, and clear space.",
-"Rest and surrender. Slow down, recover and cleanse, and prepare quietly for the next new moon."];
-
-// UI
 const $=id=>document.getElementById(id);
 const today=new Date();let sel=new Date(today.getFullYear(),today.getMonth(),today.getDate());
 let view=new Date(sel.getFullYear(),sel.getMonth(),1);
 const noon=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate(),12).getTime();
 const fd=t=>new Date(t).toLocaleDateString("en",{weekday:"short",day:"numeric",month:"short"});
 
+let TEX=null,TW=0,TH=0;
+const img=new Image();
+img.onload=()=>{const c=document.createElement("canvas");TW=c.width=img.width;TH=c.height=img.height;
+  const x=c.getContext("2d");x.drawImage(img,0,0);TEX=x.getImageData(0,0,TW,TH).data;showDay()};
+img.src="moon.jpg";
+
 function drawMoon(m){
-  const r=80,k=m.k/100,rx=r*Math.abs(1-2*k),s=k<.5?0:1;
-  const lit=`M0,${-r} A${r},${r} 0 0 1 0,${r} A${rx},${r} 0 0 ${s} 0,${-r}Z`;
-  $("moon").innerHTML=`<defs><radialGradient id="g" cx=".35" cy=".4"><stop offset="0" stop-color="#f1efe8"/><stop offset="1" stop-color="#a9a9a6"/></radialGradient></defs>
-  <circle r="${r}" fill="#131a26" stroke="#222b3b"/><path d="${lit}" fill="url(#g)" ${m.wax?"":'transform="scale(-1,1)"'}/>`;
+  const c=$("moon"),S=c.width,ctx=c.getContext("2d"),out=ctx.createImageData(S,S),o=out.data;
+  const sx=Math.sin(m.e*R),sz=-Math.cos(m.e*R);   // sun direction: x>0 = lit from the right (waxing)
+  for(let j=0;j<S;j++)for(let i=0;i<S;i++){
+    const px=(i+.5)/S*2-1,py=1-(j+.5)/S*2,r2=px*px+py*py;
+    if(r2>=1)continue;
+    const r=Math.sqrt(r2),a=r>.985?(1-r)/.015:1,nz=Math.sqrt(1-r2);
+    let v=.7;
+    if(TEX){const u=.5+Math.atan2(px,nz)/(2*Math.PI),w=.5-Math.asin(py)/Math.PI;
+      v=TEX[((Math.min(TH-1,w*TH|0))*TW+Math.min(TW-1,u*TW|0))*4]/255}
+    const b=.035+.965*Math.pow(Math.max(0,px*sx+nz*sz),.55),col=Math.min(255,v*b*390),k=(j*S+i)*4;
+    o[k]=col;o[k+1]=col*.98;o[k+2]=col*.93;o[k+3]=a*255;
+  }
+  ctx.putImageData(out,0,0);
 }
 function showDay(){
   const t=noon(sel),m=moon(t),p=phaseOf(m.e),si=Math.floor(m.lon/30);
   drawMoon(m);
   $("pct").textContent=Math.round(m.k)+"%";
   $("phase").textContent=PH[p];
-  const nn=nextEvent(t,0),nf=nextEvent(t,180);
+  const nn=nextEvent(t,0),nf=nextEvent(t,180),fi=fullMoonInfo(nf);
   $("info").innerHTML=[
     (m.wax?"Waxing":"Waning")+" · day "+Math.floor(m.e/360*29.53+1)+" of 29.5",
     "Moon in "+SIGN[si],
-    "Next full moon "+fd(nf),
-    "Next new moon "+fd(nn)].join("<br>");
-  $("notes").innerHTML=`<p>${NOTES[p]}</p><p>With the Moon in ${SIGN[si]}, the theme leans toward ${SIGNTXT[si]}.</p>`;
+    "Next full moon: "+fi.name+" Moon, "+fd(nf),
+    "Next new moon: "+fd(nn)].join("<br>");
+  $("notes").innerHTML=`<p>${NOTES[p]}</p><p>With the Moon in ${SIGN[si]}, the theme leans toward ${SIGNTXT[si]}.</p>
+  <p>The next full moon is the ${fi.name} Moon, traditionally about ${fi.theme}.</p>`;
 }
 function showMonth(){
   $("mon").textContent=view.toLocaleDateString("en",{month:"long",year:"numeric"});
@@ -119,6 +106,9 @@ function showMonth(){
   }
   $("grid").innerHTML=h;
   document.querySelectorAll("#grid button").forEach(b=>b.onclick=()=>{sel=new Date(view.getFullYear(),view.getMonth(),+b.dataset.d);showDay();showMonth();scrollTo({top:0,behavior:"smooth"})});
+  const yr=view.getFullYear(),fms=fullMoons(yr),nowT=Date.now(),nxt=fms.find(f=>f.t>nowT);
+  $("fmh").textContent=fms.length+" FULL MOONS OF "+yr;
+  $("fml").innerHTML=fms.map(f=>`<div class="fm ${f.t<nowT?"past":f===nxt?"next":""}"><span>${f.name} Moon<br><small>${f.theme}</small></span><span>${new Date(f.t).toLocaleDateString("en",{day:"numeric",month:"short"})}</span></div>`).join("");
 }
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);showMonth()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);showMonth()};
