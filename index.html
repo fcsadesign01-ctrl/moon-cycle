@@ -39,11 +39,11 @@ h3{font-weight:normal;font-size:16px;letter-spacing:2px;margin:34px 0 10px}
 .fine{font-size:11px;color:var(--mute);line-height:1.5;margin-top:26px}
 .refresh{display:block;margin:26px auto 0;background:none;border:1px solid var(--line);color:var(--ink);font:13px Georgia,serif;letter-spacing:2px;text-transform:uppercase;padding:12px 26px}
 body{position:relative}
-.speaker{position:absolute;top:calc(env(safe-area-inset-top) + 18px);right:14px;background:none;border:1px solid var(--line);border-radius:50%;width:44px;height:44px;font-size:20px;line-height:1;padding:0;color:var(--ink)}
+.speaker{position:absolute;top:calc(env(safe-area-inset-top) + 18px);right:14px;background:none;border:0;width:44px;height:44px;padding:0;color:#c4c9d2;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
-<button class="speaker" id="sound" aria-label="Sound">🔇</button>  
+<button class="speaker" id="sound" aria-label="Sound"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
 <canvas id="moon" width="440" height="440"></canvas>
 <div class="big" id="pct">–</div>
 <div class="phase" id="phase"></div>
@@ -135,7 +135,8 @@ $("sound").onclick=()=>{
   AC.resume();
   SON=!SON;
   SG.gain.setTargetAtTime(SON?1:0,AC.currentTime,1.5);   // slow fade in/out
-  $("sound").textContent=SON?"🔊":"🔇";
+  const I='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/>';
+  $("sound").innerHTML=I+(SON?'<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>':'<path d="M16 9.5l5 5M21 9.5l-5 5"/>')+'</svg>';
 };  
 showDay();showMonth();
   $("refresh").onclick=async()=>{
