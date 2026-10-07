@@ -38,14 +38,15 @@ h3{font-weight:normal;font-size:16px;letter-spacing:2px;margin:34px 0 10px}
 .notes p{font-size:15px;line-height:1.65;color:#d6d3ca;margin:0 0 12px}
 .fine{font-size:11px;color:var(--mute);line-height:1.5;margin-top:26px}
 .refresh{display:block;margin:26px auto 0;background:none;border:1px solid var(--line);color:var(--ink);font:13px Georgia,serif;letter-spacing:2px;text-transform:uppercase;padding:12px 26px}
-.sound{margin-top:18px}
+body{position:relative}
+.speaker{position:absolute;top:calc(env(safe-area-inset-top) + 18px);right:14px;background:none;border:1px solid var(--line);border-radius:50%;width:44px;height:44px;font-size:20px;line-height:1;padding:0;color:var(--ink)}
 </style>
 </head>
 <body>
+<button class="speaker" id="sound" aria-label="Sound">🔇</button>  
 <canvas id="moon" width="440" height="440"></canvas>
 <div class="big" id="pct">–</div>
 <div class="phase" id="phase"></div>
-<button class="refresh sound" id="sound">♪ Sound: off</button>
 <div class="info" id="info"></div>
 <div class="alert" id="alert"></div>
 <hr>
@@ -134,7 +135,7 @@ $("sound").onclick=()=>{
   AC.resume();
   SON=!SON;
   SG.gain.setTargetAtTime(SON?1:0,AC.currentTime,1.5);   // slow fade in/out
-  $("sound").textContent="♪ Sound: "+(SON?"on":"off");
+  $("sound").textContent=SON?"🔊":"🔇";
 };  
 showDay();showMonth();
   $("refresh").onclick=async()=>{
