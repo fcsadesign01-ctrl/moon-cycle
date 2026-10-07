@@ -37,6 +37,7 @@ h3{font-weight:normal;font-size:16px;letter-spacing:2px;margin:34px 0 10px}
 .fm.past{opacity:.4}.fm.next{color:#f1d98a}
 .notes p{font-size:15px;line-height:1.65;color:#d6d3ca;margin:0 0 12px}
 .fine{font-size:11px;color:var(--mute);line-height:1.5;margin-top:26px}
+.refresh{display:block;margin:26px auto 0;background:none;border:1px solid var(--line);color:var(--ink);font:13px Georgia,serif;letter-spacing:2px;text-transform:uppercase;padding:12px 26px}
 </style>
 </head>
 <body>
@@ -53,6 +54,7 @@ h3{font-weight:normal;font-size:16px;letter-spacing:2px;margin:34px 0 10px}
 <h3>NOTES:</h3>
 <div class="notes" id="notes"></div>
 <p class="fine">Illumination and times are calculated astronomically (accurate to within a few minutes) in your device's time zone and checked against published new/full moon times (Old Farmer's Almanac, TheSkyLive). Full moon names follow the Almanac's traditional monthly names. Guidance follows traditional lunar-phase astrology, a cultural tradition rather than science. Moon map: NASA-derived texture from the three.js sample files.</p>
+<button class="refresh" id="refresh">↻ Refresh</button>
 <script src="moon-core.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -117,6 +119,11 @@ function showMonth(){
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);showMonth()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);showMonth()};
 showDay();showMonth();
+  $("refresh").onclick=async()=>{
+  $("refresh").textContent="Refreshing…";
+  try{await Promise.all([location.pathname,"moon-core.js","moon.jpg"].map(u=>fetch(u,{cache:"reload"})))}catch(e){}
+  location.reload();
+};
 </script>
 </body>
 </html>
