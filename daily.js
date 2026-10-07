@@ -7,6 +7,7 @@ const nf=C.nextEvent(t,180),nn=C.nextEvent(t,0);
 const fmt=ts=>new Date(ts).toLocaleDateString("en",{weekday:"short",day:"numeric",month:"short",timeZone:"Asia/Dubai"});
 const fi=C.fullMoonInfo(nf);
 let body=`Moon in ${C.SIGN[si]}. ${C.NOTES[p]}\nNext full moon: ${fi.name} Moon, ${fmt(nf)}. Next new moon: ${fmt(nn)}.`;
+const ft=C.fullMoonTonight(t);if(ft)body=ft+"\n"+body;
 const title=`${C.EMO[p]} ${C.PH[p]} · ${Math.round(m.k)}%`;
 require("fs").writeFileSync("today.txt",title+"\n"+body+"\n");
 console.log(title+"\n"+body);
