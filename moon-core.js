@@ -49,4 +49,14 @@ function fullMoons(year){
   return out;
 }
 const fullMoonInfo=ts=>fullMoons(new Date(ts).getUTCFullYear()).find(f=>Math.abs(f.t-ts)<36e5)||{name:"Full",theme:""};
-if(typeof module!=="undefined")module.exports={moon,nextEvent,PH,EMO,phaseOf,SIGN,SIGNTXT,NOTES,fullMoons,fullMoonInfo};
+if(typeof module!=="undefined")module.exports={moon,nextEvent,PH,EMO,phaseOf,SIGN,SIGNTXT,NOTES,fullMoons,fullMoonInfo,fullMoonTonight};
+// "Full moon tonight" alert, using Dubai/Fujairah time (UTC+4, no daylight saving)
+const TZ=4*36e5;
+function fullMoonTonight(ts){
+  const start=Math.floor((ts+TZ)/864e5)*864e5-TZ; // start of today in Dubai time
+  const ev=nextEvent(start-36e5,180);
+  if(!ev||ev<start||ev>=start+864e5)return null;
+  const info=fullMoonInfo(ev);
+  const hhmm=new Date(ev+TZ).toISOString().slice(11,16);
+  return "🌕 Full moon tonight: the "+info.name+" Moon, exact at "+hhmm;
+}
